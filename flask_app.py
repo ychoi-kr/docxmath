@@ -45,6 +45,7 @@ def upload():
 def extract_math_from_docx(docx_filename):
     doc = Document(docx_filename)
     equations = []
+    current_header = None
 
     # xml namespace for math
     nsmap = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
@@ -54,18 +55,35 @@ def extract_math_from_docx(docx_filename):
         # Parse current XML element
         tree = ET.ElementTree(element)
         print("# Find all oMath elements (Word math objects)")
+        
+        extracted_header = _extract_header_from_element(tree, nsmap)
+        if extracted_header:
+            current_header = extracted_header
+            print("Current Header:", current_header)
 
-        for omath in tree.findall('.//m:oMath', nsmap):
-            print("# Convert the MathML to a string representation")
-            omath_str = ET.tostring(omath, encoding='unicode')
-            print("omath_str:", omath_str)
+        # Extract math equations
+        equations += _extract_equations_from_element(tree, nsmap, current_header)
 
-            print("# Convert the oMath string to LaTeX")
-            latex_code = omath_to_latex_via_docx(omath_str)
-            print("latex_code:", latex_code)
+    return equations
 
-            equations.append(latex_code)  # Append only latex_code
 
+def _extract_header_from_element(tree, nsmap):
+    style = tree.find(".//w:pStyle", nsmap)
+    if style is not None:
+        style_val = style.get("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val")
+        
+        if style_val in ['1', '2', '3', '4', '5']:
+            header_text = ''.join(run.text for run in tree.getroot().findall(".//w:t", nsmap))
+            return header_text
+    return None
+
+
+def _extract_equations_from_element(tree, nsmap, current_header):
+    equations = []
+    for omath in tree.findall('.//m:oMath', nsmap):
+        omath_str = ET.tostring(omath, encoding='unicode')
+        latex_code = omath_to_latex_via_docx(omath_str)
+        equations.append((current_header, latex_code))
     return equations
 
 
@@ -86,9 +104,8 @@ def omath_to_latex_via_docx(omath_str):
         # Pandoc을 사용하여 LaTeX로 변환
         latex_code = pypandoc.convert_file(temp.name, 'latex', format='docx')
 
-    print(f"Before: {repr(latex_code)}")
     latex_code = latex_code.removeprefix('\(').removesuffix('\)\n')
-    print(f"After: {repr(latex_code)}")
+    print(f"latex_code: {repr(latex_code)}")
 
     return latex_code
 

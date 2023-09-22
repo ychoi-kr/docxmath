@@ -10,17 +10,15 @@
     <h3>Total number of equations: {{ equations|length }}</h3>
     <table border="1">
         <tr>
+            <th>Section</th>
             <th>Equation</th>
             <th>LaTeX</th>
         </tr>
-        {% for latex in equations %}
+        {% for header, latex in equations %}
         <tr>
-            <td>
-                $$ {{ latex|safe }} $$
-            </td>
-            <td>
-                <pre>{{ latex }}</pre>
-            </td>
+            <td>{{ header }}</td>
+            <td>$$ {{ latex|safe }} $$</td>
+            <td><pre>{{ latex }}</pre></td>
         </tr>
         {% endfor %}
     </table>
