@@ -39,7 +39,7 @@ def upload():
 
     equations = extract_math_from_docx(filename)
 
-    return render_template('display.html', equations=equations)
+    return render_template('display.html', equations=equations, filename=file.filename)
 
 
 def extract_math_from_docx(docx_filename):
