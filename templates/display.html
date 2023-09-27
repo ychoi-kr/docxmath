@@ -4,11 +4,19 @@
     <meta charset="UTF-8">
     <title>docxMath - {{ filename }}</title>
     <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <style>
+        tr {
+            background-color: white;
+        }
+        tr.highlight {
+            background-color: yellow;
+        }
+    </style>
 </head>
 <body>
     <h3>Uploaded file: {{ filename }}</h3>
     <h3>Total number of equations: {{ equations|length }}</h3>
-    <table border="1">
+    <table border="1" id="myTable">
         <tr>
             <th>Section</th>
             <th>Equation</th>
@@ -22,6 +30,25 @@
         </tr>
         {% endfor %}
     </table>
+    <script>
+        // 테이블을 선택합니다.
+        const table = document.querySelector('#myTable');
+        let highlightedRow = null;
+
+        // 테이블에 mouseover 이벤트 리스너를 추가합니다.
+        table.addEventListener('mouseover', (event) => {
+            // 이벤트가 발생한 엘리먼트가 tr인 경우
+            if (event.target.tagName === 'TD') {
+                // 이전에 강조표시된 행이 있으면 강조표시를 제거합니다.
+                if (highlightedRow) {
+                    highlightedRow.classList.remove('highlight');
+                }
+                // 현재 행을 강조표시합니다.
+                highlightedRow = event.target.parentElement;
+                highlightedRow.classList.add('highlight');
+            }
+        });
+    </script>
 </body>
 </html>
 
