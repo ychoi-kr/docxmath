@@ -73,8 +73,9 @@ def _extract_header_from_element(tree, nsmap):
         style_val = style.get("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}val")
         
         if style_val in ['1', '2', '3', '4', '5']:
+            headingtag = '#' * int(style_val) + ' '
             header_text = ''.join(run.text for run in tree.getroot().findall(".//w:t", nsmap))
-            return header_text
+            return headingtag + header_text
     return None
 
 
