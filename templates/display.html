@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>docxMath - {{ filename }}</title>
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+          displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+          processEscapes: true
+        }
+      });
+    </script>
     <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
     <style>
         tr {
@@ -10,6 +19,13 @@
         }
         tr.highlight {
             background-color: yellow;
+        }
+        a {
+            text-decoration: none;
+            color: black;
+        }
+        a:hover {
+            color: blue;
         }
     </style>
 </head>
@@ -22,11 +38,17 @@
             <th>Equation</th>
             <th>LaTeX</th>
         </tr>
-        {% for header, latex in equations %}
+        {% for header, latex, mode in equations %}
         <tr>
             <td>{{ header }}</td>
-            <td>$$ {{ latex|safe }} $$</td>
-            <td><pre>{{ latex }}</pre></td>
+            <td>
+                {% if mode == "linear" %}
+                $ {{ latex|safe }} $
+                {% else %}
+                $$ {{ latex|safe }} $$
+                {% endif %}
+            </td>
+            <td><a href="https://equation.pythonanywhere.com/{{ latex | urlencode }}" target="_blank">{{ latex }}</a></td>
         </tr>
         {% endfor %}
     </table>

@@ -1,16 +1,16 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, Markup
 import os
 import xml.etree.ElementTree as ET
 import html
 import tempfile
 import re
+from lxml import etree
+from urllib.parse import quote
 
 from docx import Document
 
-#from latex2mathml.converter import convert as mathml_to_latex
 import pypandoc
 
-from lxml import etree
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -84,7 +84,8 @@ def _extract_equations_from_element(tree, nsmap, current_header):
     for omath in tree.findall('.//m:oMath', nsmap):
         omath_str = ET.tostring(omath, encoding='unicode')
         latex_code = omath_to_latex_via_docx(omath_str)
-        equations.append((current_header, latex_code))
+        mode = determine_mode(omath, nsmap)
+        equations.append((current_header, latex_code, mode))
     return equations
 
 
@@ -109,6 +110,33 @@ def omath_to_latex_via_docx(omath_str):
     print(f"latex_code: {repr(latex_code)}")
 
     return latex_code
+
+
+@app.template_filter('urlencode')
+def urlencode_filter(s):
+    if type(s) == 'Markup':
+        s = s.unescape()
+    s = s.encode('utf8')
+    s = quote(s)
+    return Markup(s)
+
+
+def determine_mode(omath_element, nsmap):
+    # 선형 모드 패턴
+    linear_mode_tags = omath_element.findall('.//m:t', nsmap)
+    
+    # 전문가 모드 패턴
+    professional_mode_tags = omath_element.findall('.//m:f', nsmap)
+    
+    # 선형 모드 태그만 존재하는 경우
+    if linear_mode_tags and not professional_mode_tags:
+        return 'linear'
+    # 전문가 모드 태그가 존재하는 경우
+    elif professional_mode_tags:
+        return 'professional'
+    # 아무 패턴도 맞지 않는 경우 (이는 보통 발생하지 않을 것입니다)
+    else:
+        return 'unknown'
 
 
 if __name__ == '__main__':
