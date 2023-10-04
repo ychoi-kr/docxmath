@@ -36,6 +36,7 @@
         <tr>
             <th>Section</th>
             <th>Equation</th>
+            <th>Mode</th>
             <th>LaTeX</th>
         </tr>
         {% for header, latex, mode in equations %}
@@ -48,6 +49,7 @@
                 $$ {{ latex|safe }} $$
                 {% endif %}
             </td>
+            <td>{{ mode.title() }}</td>
             <td><a href="https://equation.pythonanywhere.com/{{ latex | urlencode }}" target="_blank">{{ latex }}</a></td>
         </tr>
         {% endfor %}
